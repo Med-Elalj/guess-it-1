@@ -1,99 +1,63 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"math"
-	"sort"
+	"os"
+	"strconv"
 )
 
 func main() {
-	var data [12501]int
-	i, c := 0, 0
-	for {
-
-		_, err := fmt.Scanf("%d\n", &i)
+	var dataSlice []float64
+	scanner := bufio.NewScanner(os.Stdin)
+	for scanner.Scan() {
+		input := scanner.Text()
+		num, err := strconv.ParseFloat(input, 64)
 		if err != nil {
-			fmt.Println(err)
-			return
+			fmt.Println("Invalid input!!!!")
+			continue
 		}
-		if i >= 0 && i <= 400 {
-			data[c] = i
-			var a, b int = i, i
-			if c > 10 {
-				a, b = expect(i, data[:c+1])
-				// } else {
-				// 	a, b = i, i
-			}
-			fmt.Printf("%d %d\n", a-10, b+10)
-			// fmt.Printf("                                 %t", good(data[c], i, int(f)))
-		} else {
-			data[c] = 150
-			fmt.Printf("%d %d\n", int(median(data[:c+1])), int(median(data[:c+1])))
+		dataSlice = append(dataSlice, num)
+		if len(dataSlice) > 1 {
+			lower, upper := expect(dataSlice)
+			fmt.Printf("%d %d\n", lower, upper)
 		}
-		c++
 	}
 }
 
-//	func good(a, b, c int) bool {
-//		return (b-c <= a && b+c >= a)
-//	}
-// var a float64
-
-func expect(i int, data []int) (int, int) {
-	a := average(data)
-	// a := median(data)
-	// if i >= 20 {
-	// m := median(data[len(data)-9:])
-	// }
-	v := variance(data)
+func expect(data []float64) (int, int) {
+	s := len(data) - 4
+	if s < 0 {
+		s = 0
+	}
+	a := average(data[s:])
+	v := variance(data[s:])
 	dv := math.Sqrt(v)
-	// i, j := ans(float64(i), a, 2.0)
-	i, j := ans(a, dv, 5.0)
+	i, j := ans(a, dv)
 	return i, j
-	// return int(a), int(a)
 }
 
-func ans(i, j, n float64) (int, int) {
-	if i-j >= n {
-		// i = i - 3
-		j = i - n
-	} else if i-j <= n {
-		// i = i + 3
-		j = i + n
+func ans(i, j float64) (int, int) {
+	if j < 0 {
+		j = -j
 	}
-	if i < j {
-		return int(i), int(j)
-	}
-	return int(j), int(i)
+	return int(i - (1.2 * j)), int(i + (1.2 * j))
 }
 
-func average(numbers []int) float64 {
-	sum := 0
+func average(numbers []float64) float64 {
+	sum := 0.0
 	for _, num := range numbers {
 		sum += num
 	}
 	return float64(sum) / float64(len(numbers))
 }
 
-func median(numbers []int) float64 {
-	n := len(numbers)
-	// sortedNumbers := make([]int, n)
-	sort.Ints(numbers)
-	if n%2 == 1 {
-		return float64(numbers[n/2])
-	}
-	return float64(numbers[n/2-1]+numbers[n/2]) / 2.0
-}
-
-func variance(numbers []int) float64 {
+func variance(numbers []float64) float64 {
 	average := average(numbers)
-	sumOfSquares := 0.0
+	var sumOfSquares uint64 = 0
 	for _, num := range numbers {
-		sumOfSquares += (float64(num) - average) * (float64(num) - average)
+		sumOfSquares += uint64((num)-average) * uint64((num)-average)
 	}
-	return sumOfSquares / float64(len(numbers))
-}
-
-func standardDeviation(numbers []int) float64 {
-	return math.Sqrt(variance(numbers))
+	return float64(sumOfSquares) / float64(len(numbers))
 }
